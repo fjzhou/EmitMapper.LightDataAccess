@@ -8,6 +8,6 @@ It depends on [EmitMapper](http://emitmapper.codeplex.com/). And this is the ori
 <pre>
 List&lt;Tag&gt; tags = DBTools.CreateConnection("TagDbConnectionString")
     .ExecuteReader(System.Data.CommandType.Text, "SELECT TagId, TagName FROM Tag WHERE TagId &lt; @tagId", new CmdParams() { { "@tagId", 4 } })
-    .ToObjects<Tag>()
+    .ToObjects&lt;Tag&gt;()
     .ToList();
 </pre>
