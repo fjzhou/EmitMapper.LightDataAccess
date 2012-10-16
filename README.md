@@ -1,5 +1,6 @@
 EmitMapper.LightDataAccess
 ==========================
 
-LightDataAccess from EmitMapper project
-It depends EmitMapper.dll(http://emitmapper.codeplex.com/)
+LightDataAccess from EmitMapper project.
+
+It depends on [EmitMapper](http://emitmapper.codeplex.com/). And this is the original version from Codeplex.
