@@ -65,6 +65,7 @@
       <HintPath>C:\Users\Zhoufangjun\Downloads\EmitMapper.dll</HintPath>
     </Reference>
     <Reference Include="System" />
+    <Reference Include="System.configuration" />
     <Reference Include="System.Core">
       <RequiredTargetFramework>3.5</RequiredTargetFramework>
     </Reference>
@@ -81,6 +82,7 @@
     <Compile Include="CmdParams.cs" />
     <Compile Include="CommandBuilder.Insert.cs" />
     <Compile Include="CommandBuilder.Update.cs" />
+    <Compile Include="DataConnectionExtension.cs" />
     <Compile Include="MappingConfigs\AddDbCommandsMappingConfig.cs" />
     <Compile Include="ObjectsChangeTracker.cs" />
     <Compile Include="SelectConstraints.cs" />

@@ -8,25 +8,60 @@ namespace LightDataAccess
 {
 	public static class DBTools
 	{
-        public static int ExecuteNonQuery(DbConnection conn, string commandText, CmdParams cmdParams)
+        /// <summary>
+        /// Create a new connection using connection string and db provider name
+        /// </summary>
+        /// <param name="connectionString"></param>
+        /// <param name="providerName"></param>
+        /// <returns></returns>
+        public static DbConnection CreateConnection(string connectionString, string providerName)
         {
-            using (var cmd = CreateCommand(conn, commandText, cmdParams))
+            var factory = DbProviderFactories.GetFactory(providerName);
+            if (factory == null)
+                return null;
+            var connection = factory.CreateConnection();
+            connection.ConnectionString = connectionString;
+            return connection;
+        }
+
+        /// <summary>
+        /// Create a new connection using configuration file
+        /// </summary>
+        /// <param name="configurationName">Configuration name in config/ConnectionStrings section</param>
+        /// <returns></returns>
+        public static DbConnection CreateConnection(string configurationName)
+        {
+            var connectionSetting = System.Configuration.ConfigurationManager.ConnectionStrings[configurationName];
+            if (connectionSetting == null)
+                return null;
+
+            var factory = DbProviderFactories.GetFactory(connectionSetting.ProviderName);
+            if (factory == null)
+                return null;
+            var connection = factory.CreateConnection();
+            connection.ConnectionString = connectionSetting.ConnectionString;
+            return connection;
+        }
+
+        public static int ExecuteNonQuery(DbConnection conn, CommandType commandType, string commandText, CmdParams cmdParams)
+        {
+            using (var cmd = CreateCommand(conn, commandType, commandText, cmdParams))
             {
                 return cmd.ExecuteNonQuery();
             }
         }
 
-        public static object ExecuteScalar(DbConnection conn, string commandText, CmdParams cmdParams)
+        public static object ExecuteScalar(DbConnection conn, CommandType commandType, string commandText, CmdParams cmdParams)
         {
-            using (var cmd = CreateCommand(conn, commandText, cmdParams))
+            using (var cmd = CreateCommand(conn, commandType, commandText, cmdParams))
             {
                 return cmd.ExecuteScalar();
             }
         }
 
-        public static T ExecuteScalar<T>(DbConnection conn, string commandText, CmdParams cmdParams)
+        public static T ExecuteScalar<T>(DbConnection conn, CommandType commandType, string commandText, CmdParams cmdParams)
         {
-            object result = ExecuteScalar(conn, commandText, cmdParams);
+            object result = ExecuteScalar(conn, commandType, commandText, cmdParams);
             if (typeof(T) == typeof(Guid))
             {
                 if(result == null)
@@ -42,17 +77,17 @@ namespace LightDataAccess
             return (T)Convert.ChangeType(result, typeof(T));
         }
 
-		public static DbDataReader ExecuteReader(DbConnection conn, string commandText, CmdParams cmdParams)
+		public static DbDataReader ExecuteReader(DbConnection conn, CommandType commandType, string commandText, CmdParams cmdParams)
 		{
-			using (var cmd = CreateCommand(conn, commandText, cmdParams))
+			using (var cmd = CreateCommand(conn, commandType, commandText, cmdParams))
 			{
 				return cmd.ExecuteReader();
 			}
 		}
 
-        public static T ExecuteReader<T>(DbConnection conn, string commandText, CmdParams cmdParams, Func<DbDataReader, T> func) where T:class
+        public static T ExecuteReader<T>(DbConnection conn, CommandType commandType, string commandText, CmdParams cmdParams, Func<DbDataReader, T> func) where T:class
         {
-            using (var cmd = CreateCommand(conn, commandText, cmdParams))
+            using (var cmd = CreateCommand(conn, commandType, commandText, cmdParams))
             using (var reader = cmd.ExecuteReader())
             {
 				if (reader.Read())
@@ -66,9 +101,9 @@ namespace LightDataAccess
             }
         }
 
-        public static T ExecuteReaderStruct<T>(DbConnection conn, string commandText, CmdParams cmdParams, Func<DbDataReader, T> func) where T : struct 
+        public static T ExecuteReaderStruct<T>(DbConnection conn, CommandType commandType, string commandText, CmdParams cmdParams, Func<DbDataReader, T> func) where T : struct 
         {
-            using (var cmd = CreateCommand(conn, commandText, cmdParams))
+            using (var cmd = CreateCommand(conn, commandType, commandText, cmdParams))
             using (var reader = cmd.ExecuteReader())
             {
                 if (reader.Read())
@@ -82,9 +117,9 @@ namespace LightDataAccess
             }
         }
 
-        public static IEnumerable<T> ExecuteReaderEnum<T>(DbConnection conn, string commandText, CmdParams cmdParams, Func<DbDataReader, T> func)
+        public static IEnumerable<T> ExecuteReaderEnum<T>(DbConnection conn, CommandType commandType, string commandText, CmdParams cmdParams, Func<DbDataReader, T> func)
         {
-            using (var cmd = CreateCommand(conn, commandText, cmdParams))
+            using (var cmd = CreateCommand(conn, commandType, commandText, cmdParams))
             using (var reader = cmd.ExecuteReader())
             {
                 while (reader.Read())
@@ -96,21 +131,23 @@ namespace LightDataAccess
 
 		public static IEnumerable<T> ReadCollection<T>(
 			DbConnection conn,
+            CommandType commandType,
 			string commandText,
 			CmdParams cmdParams,
 			string[] excludeFields)
 		{
-			return ReadCollection<T>(conn, commandText, cmdParams, excludeFields, null);
+			return ReadCollection<T>(conn, commandType, commandText, cmdParams, excludeFields, null);
 		}
 
         public static IEnumerable<T> ReadCollection<T>(
 			DbConnection conn, 
+            CommandType commandType,
 			string commandText, 
 			CmdParams cmdParams, 
 			string[] excludeFields,
 			ObjectsChangeTracker changeTracker)
         {
-            using (var cmd = CreateCommand(conn, commandText, cmdParams))
+            using (var cmd = CreateCommand(conn, commandType, commandText, cmdParams))
             using (var reader = cmd.ExecuteReader())
             {
                 while (reader.Read())
@@ -120,9 +157,9 @@ namespace LightDataAccess
             }
         }
 
-        public static DbCommand CreateCommand(DbConnection conn, string commandText)
+        public static DbCommand CreateCommand(DbConnection conn, CommandType commandType, string commandText)
         {
-            var result = CreateCommand(conn, commandText, null);
+            var result = CreateCommand(conn, commandType, commandText, null);
             return result;
         }
 
@@ -145,7 +182,7 @@ namespace LightDataAccess
 			return cmd;
 		}
 
-        public static DbCommand CreateCommand(DbConnection conn, string commandText, CmdParams cmdParams)
+        public static DbCommand CreateCommand(DbConnection conn, CommandType commandType, string commandText, CmdParams cmdParams)
         {
             if (conn.State == ConnectionState.Closed)
             {
@@ -153,7 +190,7 @@ namespace LightDataAccess
             }
             var result = conn.CreateCommand();
             result.CommandText = commandText;
-            result.CommandType = CommandType.Text;
+            result.CommandType = commandType;
             if (cmdParams != null)
             {
                 foreach (var param in cmdParams)
