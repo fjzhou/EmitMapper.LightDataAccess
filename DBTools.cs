@@ -6,8 +6,8 @@ using System.Data;
 
 namespace LightDataAccess
 {
-	public static class DBTools
-	{
+    public static class DBTools
+    {
         /// <summary>
         /// Create a new connection using connection string and db provider name
         /// </summary>
@@ -64,7 +64,7 @@ namespace LightDataAccess
             object result = ExecuteScalar(conn, commandType, commandText, cmdParams);
             if (typeof(T) == typeof(Guid))
             {
-                if(result == null)
+                if (result == null)
                 {
                     return (T)((object)Guid.Empty);
                 }
@@ -77,31 +77,31 @@ namespace LightDataAccess
             return (T)Convert.ChangeType(result, typeof(T));
         }
 
-		public static DbDataReader ExecuteReader(DbConnection conn, CommandType commandType, string commandText, CmdParams cmdParams)
-		{
-			using (var cmd = CreateCommand(conn, commandType, commandText, cmdParams))
-			{
-				return cmd.ExecuteReader();
-			}
-		}
+        public static DbDataReader ExecuteReader(DbConnection conn, CommandType commandType, string commandText, CmdParams cmdParams)
+        {
+            using (var cmd = CreateCommand(conn, commandType, commandText, cmdParams))
+            {
+                return cmd.ExecuteReader();
+            }
+        }
 
-        public static T ExecuteReader<T>(DbConnection conn, CommandType commandType, string commandText, CmdParams cmdParams, Func<DbDataReader, T> func) where T:class
+        public static T ExecuteReader<T>(DbConnection conn, CommandType commandType, string commandText, CmdParams cmdParams, Func<DbDataReader, T> func) where T : class
         {
             using (var cmd = CreateCommand(conn, commandType, commandText, cmdParams))
             using (var reader = cmd.ExecuteReader())
             {
-				if (reader.Read())
-				{
-					return func(reader);
-				}
-				else
-				{
-					return null;
-				}
+                if (reader.Read())
+                {
+                    return func(reader);
+                }
+                else
+                {
+                    return null;
+                }
             }
         }
 
-        public static T ExecuteReaderStruct<T>(DbConnection conn, CommandType commandType, string commandText, CmdParams cmdParams, Func<DbDataReader, T> func) where T : struct 
+        public static T ExecuteReaderStruct<T>(DbConnection conn, CommandType commandType, string commandText, CmdParams cmdParams, Func<DbDataReader, T> func) where T : struct
         {
             using (var cmd = CreateCommand(conn, commandType, commandText, cmdParams))
             using (var reader = cmd.ExecuteReader())
@@ -129,30 +129,30 @@ namespace LightDataAccess
             }
         }
 
-		public static IEnumerable<T> ReadCollection<T>(
-			DbConnection conn,
+        public static IEnumerable<T> ReadCollection<T>(
+            DbConnection conn,
             CommandType commandType,
-			string commandText,
-			CmdParams cmdParams,
-			string[] excludeFields)
-		{
-			return ReadCollection<T>(conn, commandType, commandText, cmdParams, excludeFields, null);
-		}
+            string commandText,
+            CmdParams cmdParams,
+            string[] excludeFields)
+        {
+            return ReadCollection<T>(conn, commandType, commandText, cmdParams, excludeFields, null);
+        }
 
         public static IEnumerable<T> ReadCollection<T>(
-			DbConnection conn, 
+            DbConnection conn,
             CommandType commandType,
-			string commandText, 
-			CmdParams cmdParams, 
-			string[] excludeFields,
-			ObjectsChangeTracker changeTracker)
+            string commandText,
+            CmdParams cmdParams,
+            string[] excludeFields,
+            ObjectsChangeTracker changeTracker)
         {
             using (var cmd = CreateCommand(conn, commandType, commandText, cmdParams))
             using (var reader = cmd.ExecuteReader())
             {
                 while (reader.Read())
                 {
-					yield return reader.ToObject<T>(null, excludeFields, changeTracker);
+                    yield return reader.ToObject<T>(null, excludeFields, changeTracker);
                 }
             }
         }
@@ -163,24 +163,24 @@ namespace LightDataAccess
             return result;
         }
 
-		public static DbCommand AddParam(this DbCommand cmd, string paramName, object paramValue)
-		{
-			if (paramValue is Guid)
-			{
-				paramValue = ((Guid)paramValue).ToGuidStr();
-			}
+        public static DbCommand AddParam(this DbCommand cmd, string paramName, object paramValue)
+        {
+            if (paramValue is Guid)
+            {
+                paramValue = ((Guid)paramValue).ToGuidStr();
+            }
 
-			if (paramValue == null)
-			{
-				paramValue = DBNull.Value;
-			}
+            if (paramValue == null)
+            {
+                paramValue = DBNull.Value;
+            }
 
-			var par = cmd.CreateParameter();
-			par.ParameterName = paramName;
-			par.Value = paramValue;
-			cmd.Parameters.Add(par);
-			return cmd;
-		}
+            var par = cmd.CreateParameter();
+            par.ParameterName = paramName;
+            par.Value = paramValue;
+            cmd.Parameters.Add(par);
+            return cmd;
+        }
 
         public static DbCommand CreateCommand(DbConnection conn, CommandType commandType, string commandText, CmdParams cmdParams)
         {
@@ -229,10 +229,10 @@ namespace LightDataAccess
 
         public static string ToCSV<T>(this IEnumerable<T> collection, string delim)
         {
-			if (collection == null)
-			{
-				return "";
-			}
+            if (collection == null)
+            {
+                return "";
+            }
 
             StringBuilder result = new StringBuilder();
             foreach (T value in collection)
@@ -247,60 +247,60 @@ namespace LightDataAccess
             return result.ToString();
         }
 
-		public static T ToObject<T>(this DbDataReader reader)
-		{
-			return reader.ToObject<T>(null, null, null);
-		}
+        public static T ToObject<T>(this DbDataReader reader)
+        {
+            return reader.ToObject<T>(null, null, null);
+        }
 
-		public static T ToObject<T>(this DbDataReader reader, string readerName)
-		{
-			return reader.ToObject<T>(readerName, null, null);
-		}
+        public static T ToObject<T>(this DbDataReader reader, string readerName)
+        {
+            return reader.ToObject<T>(readerName, null, null);
+        }
 
-		public static T ToObject<T>(this DbDataReader reader, string[] excludeFields)
-		{
-			return reader.ToObject<T>(null, excludeFields, null);
-		}
+        public static T ToObject<T>(this DbDataReader reader, string[] excludeFields)
+        {
+            return reader.ToObject<T>(null, excludeFields, null);
+        }
 
-		public static T ToObject<T>(this DbDataReader reader, string readerName, string[] excludeFields, ObjectsChangeTracker changeTracker)
-		{
-			T result = new DataReaderToObjectMapper<T>(readerName, null, excludeFields).MapUsingState(reader, reader);
-			if (changeTracker != null)
-			{
-				changeTracker.RegisterObject(result);
-			}
-			return result;
-		}
+        public static T ToObject<T>(this DbDataReader reader, string readerName, string[] excludeFields, ObjectsChangeTracker changeTracker)
+        {
+            T result = new DataReaderToObjectMapper<T>(readerName, null, excludeFields).MapUsingState(reader, reader);
+            if (changeTracker != null)
+            {
+                changeTracker.RegisterObject(result);
+            }
+            return result;
+        }
 
-		public static IEnumerable<T> ToObjects<T>(this DbDataReader reader)
-		{
-			return reader.ToObjects<T>(null, null, null);
-		}
+        public static IEnumerable<T> ToObjects<T>(this DbDataReader reader)
+        {
+            return reader.ToObjects<T>(null, null, null);
+        }
 
-		public static IEnumerable<T> ToObjects<T>(this DbDataReader reader, string readerName)
-		{
-			return reader.ToObjects<T>(readerName, null, null);
-		}
+        public static IEnumerable<T> ToObjects<T>(this DbDataReader reader, string readerName)
+        {
+            return reader.ToObjects<T>(readerName, null, null);
+        }
 
-		public static IEnumerable<T> ToObjects<T>(this DbDataReader reader, string[] excludeFields)
-		{
-			return reader.ToObjects<T>(null, excludeFields, null);
-		}
+        public static IEnumerable<T> ToObjects<T>(this DbDataReader reader, string[] excludeFields)
+        {
+            return reader.ToObjects<T>(null, excludeFields, null);
+        }
 
-		public static IEnumerable<T> ToObjects<T>(this DbDataReader reader, string readerName, string[] excludeFields, ObjectsChangeTracker changeTracker)
-		{
-			if (string.IsNullOrEmpty(readerName))
-			{
-				var mappingKeyBuilder = new StringBuilder();
-				for (int i = 0; i < reader.FieldCount; ++i)
-				{
-					mappingKeyBuilder.Append(reader.GetName(i));
-					mappingKeyBuilder.Append(' ');
-				}
-				readerName = mappingKeyBuilder.ToString();
-			}
-			return new DataReaderToObjectMapper<T>(readerName, null, excludeFields).ReadCollection(reader, changeTracker);
-		}
+        public static IEnumerable<T> ToObjects<T>(this DbDataReader reader, string readerName, string[] excludeFields, ObjectsChangeTracker changeTracker)
+        {
+            if (string.IsNullOrEmpty(readerName))
+            {
+                var mappingKeyBuilder = new StringBuilder();
+                for (int i = 0; i < reader.FieldCount; ++i)
+                {
+                    mappingKeyBuilder.Append(reader.GetName(i));
+                    mappingKeyBuilder.Append(' ');
+                }
+                readerName = mappingKeyBuilder.ToString();
+            }
+            return new DataReaderToObjectMapper<T>(readerName, null, excludeFields).ReadCollection(reader, changeTracker);
+        }
 
         public static void InsertObject(
             DbConnection conn,
@@ -332,57 +332,57 @@ namespace LightDataAccess
             }
         }
 
-		public static void UpdateObject(
-			DbConnection conn,
-			object obj,
-			string tableName,
-			string[] idFieldNames,
-			ObjectsChangeTracker changeTracker,
-			DbSettings dbSettings
-		)
-		{
-			UpdateObject(conn, obj, tableName, idFieldNames, null, null, changeTracker, dbSettings);
-		}
+        public static void UpdateObject(
+            DbConnection conn,
+            object obj,
+            string tableName,
+            string[] idFieldNames,
+            ObjectsChangeTracker changeTracker,
+            DbSettings dbSettings
+        )
+        {
+            UpdateObject(conn, obj, tableName, idFieldNames, null, null, changeTracker, dbSettings);
+        }
 
-		public static void UpdateObject(
-			DbConnection conn,
-			object obj,
-			string tableName,
-			string[] idFieldNames,
-			string[] includeFields,
-			string[] excludeFields,
-			ObjectsChangeTracker changeTracker,
-			DbSettings dbSettings
-		)
+        public static void UpdateObject(
+            DbConnection conn,
+            object obj,
+            string tableName,
+            string[] idFieldNames,
+            string[] includeFields,
+            string[] excludeFields,
+            ObjectsChangeTracker changeTracker,
+            DbSettings dbSettings
+        )
         {
             using (var cmd = conn.CreateCommand())
             {
-				if (
-					cmd.BuildUpdateCommand(
-						obj, 
-						tableName, 
-						idFieldNames, 
-						includeFields, 
-						excludeFields, 
-						changeTracker, 
-						dbSettings
-					)
-				)
-				{
-					cmd.ExecuteNonQuery();
-				}
+                if (
+                    cmd.BuildUpdateCommand(
+                        obj,
+                        tableName,
+                        idFieldNames,
+                        includeFields,
+                        excludeFields,
+                        changeTracker,
+                        dbSettings
+                    )
+                )
+                {
+                    cmd.ExecuteNonQuery();
+                }
             }
         }
 
         public static void UpdateObject(
-			DbConnection conn,
-			object obj,
-			string tableName,
-			string[] idFieldNames,
-			DbSettings dbSettings
-		)
+            DbConnection conn,
+            object obj,
+            string tableName,
+            string[] idFieldNames,
+            DbSettings dbSettings
+        )
         {
-			UpdateObject(conn, obj, tableName, idFieldNames, null, null, null, dbSettings);
+            UpdateObject(conn, obj, tableName, idFieldNames, null, null, null, dbSettings);
         }
-	}
+    }
 }
