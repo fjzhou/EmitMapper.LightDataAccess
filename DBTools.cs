@@ -81,14 +81,14 @@ namespace LightDataAccess
         {
             using (var cmd = CreateCommand(conn, commandType, commandText, cmdParams))
             {
-                return cmd.ExecuteReader();
+                return cmd.ExecuteReader(CommandBehavior.CloseConnection);
             }
         }
 
         public static T ExecuteReader<T>(DbConnection conn, CommandType commandType, string commandText, CmdParams cmdParams, Func<DbDataReader, T> func) where T : class
         {
             using (var cmd = CreateCommand(conn, commandType, commandText, cmdParams))
-            using (var reader = cmd.ExecuteReader())
+            using (var reader = cmd.ExecuteReader(CommandBehavior.CloseConnection))
             {
                 if (reader.Read())
                 {
