@@ -15,7 +15,10 @@
     <link rel="stylesheet" href="stylesheets/ie.css">
     <![endif]-->
     <meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no">
-
+    <link href="http://alexgorbatchev.com/pub/sh/current/styles/shThemeDefault.css" rel="stylesheet" type="text/css" />
+    <script src="http://alexgorbatchev.com/pub/sh/current/scripts/shCore.js" type="text/javascript"></script>
+    <script src="javascripts/shBrushCSharp.js" type="text/javascript"></script>
+    <script src="http://alexgorbatchev.com/pub/sh/current/scripts/shAutoloader.js" type="text/javascript"></script>
   </head>
   <body>
       <div id="header">
@@ -43,11 +46,17 @@
 <p>LightDataAccess from EmitMapper project.</p>
 
 <p>It depends on <a href="http://emitmapper.codeplex.com/">EmitMapper</a>. </p>
-
-<pre>
+<style type="text/css">
+  .syntaxhighlighter {
+    width: 960px;
+  }
+</style>
+<pre class="brush: csharp; tab-size:4">
 using(var connection = DBTools.CreateConnection("TagDbConnectionString"))
 {
-    List&lt;Tag&gt; tags = connection.ExecuteReader(System.Data.CommandType.Text, "SELECT TagId, TagName FROM Tag WHERE TagId &lt; @tagId", new CmdParams() { { "@tagId", 4 } })
+    List&lt;Tag&gt; tags = connection.ExecuteReader(System.Data.CommandType.Text, 
+      "SELECT TagId, TagName FROM Tag WHERE TagId &lt; @tagId", 
+      new CmdParams() { { "@tagId", 4 } })
     .ToObjects&lt;Tag&gt;()
     .ToList();
 }
@@ -56,6 +65,8 @@ using(var connection = DBTools.CreateConnection("TagDbConnectionString"))
 
     </div>
     <!--[if !IE]><script>fixScale(document);</script><![endif]-->
-    
+    <<script type="text/javascript">
+      SyntaxHighlighter.all();
+    </script>
   </body>
 </html>
