@@ -46,12 +46,7 @@
 <p>LightDataAccess from EmitMapper project.</p>
 
 <p>It depends on <a href="http://emitmapper.codeplex.com/">EmitMapper</a>. </p>
-<style type="text/css">
-  .syntaxhighlighter {
-    width: 960px;
-  }
-</style>
-<pre class="brush: csharp; tab-size:4">
+<pre class="brush: csharp;">
 using(var connection = DBTools.CreateConnection("TagDbConnectionString"))
 {
     List&lt;Tag&gt; tags = connection.ExecuteReader(System.Data.CommandType.Text, 
